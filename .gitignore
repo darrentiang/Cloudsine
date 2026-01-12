@@ -32,3 +32,6 @@ uploads/
 
 # Logs
 *.log
+
+# Context transfer (not for submission)
+_context/
