@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Scanner - CloudsineAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>File Scanner</h1>
+        <p class="subtitle">Scan files for malware with AI-powered analysis</p>
+
+        <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">📁</div>
+            <p class="upload-text">Drop file here or <span>click to browse</span></p>
+            <input type="file" class="file-input" id="fileInput">
+        </div>
+
+        <div class="file-name" id="fileName"></div>
+
+        <button class="scan-btn" id="scanBtn" disabled>Scan File</button>
+
+        <div class="results" id="results">
+            <div class="results-header">
+                <span class="status-icon" id="statusIcon"></span>
+                <span class="status-text" id="statusText"></span>
+            </div>
+
+            <div class="stats" id="stats"></div>
+
+            <div class="ai-section">
+                <button class="ai-btn" id="aiBtn">Explain with AI</button>
+                <div class="ai-explanation" id="aiExplanation"></div>
+            </div>
+        </div>
+
+        <div class="error" id="error" style="display: none;"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
