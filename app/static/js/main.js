@@ -98,18 +98,15 @@ function updateButtonStatus(text) {
 }
 
 function displayResults(data) {
-    const statusIcon = document.getElementById('statusIcon');
     const statusText = document.getElementById('statusText');
     const stats = document.getElementById('stats');
 
     const malicious = data.stats?.malicious || 0;
 
     if (malicious > 0) {
-        statusIcon.textContent = '';
         statusText.textContent = 'Threat Detected';
         statusText.className = 'status-text danger';
     } else {
-        statusIcon.textContent = '';
         statusText.textContent = 'No Threats Found';
         statusText.className = 'status-text safe';
     }

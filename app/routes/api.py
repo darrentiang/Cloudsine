@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.services.virustotal import VirusTotalService
+from app.services.gemini import GeminiService
 
 api_bp = Blueprint('api', __name__)
 
@@ -29,3 +30,26 @@ def scan_file():
         return jsonify(result), 500
 
     return jsonify(result)
+
+
+@api_bp.route('/explain', methods=['POST'])
+def explain_results():
+    """
+    Generate AI explanation of scan results.
+
+    POST /api/explain
+    Body: {"scan_results": {"stats": {...}}}
+
+    Returns: {"explanation": "..."}
+    """
+    data = request.get_json()
+
+    if not data or 'scan_results' not in data:
+        return jsonify({'error': 'No scan results provided'}), 400
+
+    stats = data['scan_results'].get('stats', {})
+
+    gemini_service = GeminiService()
+    explanation = gemini_service.explain_results(stats)
+
+    return jsonify({'explanation': explanation})
