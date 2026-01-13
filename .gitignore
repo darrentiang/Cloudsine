@@ -33,5 +33,8 @@ uploads/
 # Logs
 *.log
 
-# Context transfer (not for submission)
+# Context transfer
 _context/
+
+# Test scripts
+test_*.py
