@@ -7,37 +7,24 @@ const error = document.getElementById('error');
 
 let selectedFile = null;
 
-// Click to browse
 uploadZone.addEventListener('click', () => fileInput.click());
 
-// File selected
 fileInput.addEventListener('change', (e) => {
-    if (e.target.files[0]) {
-        selectFile(e.target.files[0]);
-    }
+    if (e.target.files[0]) selectFile(e.target.files[0]);
 });
 
-// Drag and drop
 uploadZone.addEventListener('dragover', (e) => {
     e.preventDefault();
-    uploadZone.classList.add('dragover');
-});
-
-uploadZone.addEventListener('dragleave', () => {
-    uploadZone.classList.remove('dragover');
 });
 
 uploadZone.addEventListener('drop', (e) => {
     e.preventDefault();
-    uploadZone.classList.remove('dragover');
-    if (e.dataTransfer.files[0]) {
-        selectFile(e.dataTransfer.files[0]);
-    }
+    if (e.dataTransfer.files[0]) selectFile(e.dataTransfer.files[0]);
 });
 
 function selectFile(file) {
     selectedFile = file;
-    fileName.textContent = `Selected: ${file.name} (${formatSize(file.size)})`;
+    fileName.textContent = `${file.name} (${formatSize(file.size)})`;
     fileName.classList.add('show');
     scanBtn.disabled = false;
     results.classList.remove('show');
@@ -50,29 +37,48 @@ function formatSize(bytes) {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-// Scan file
 scanBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
 
     scanBtn.disabled = true;
-    scanBtn.textContent = 'Scanning...';
     error.style.display = 'none';
     results.classList.remove('show');
+
+    // Progress step 1: Uploading
+    updateButtonStatus('Uploading file');
 
     const formData = new FormData();
     formData.append('file', selectedFile);
 
     try {
-        const response = await fetch('/api/scan', {
+        // Progress step 2: After short delay, show scanning
+        const scanPromise = fetch('/api/scan', {
             method: 'POST',
             body: formData
         });
 
+        // Show scanning message after 2 seconds (upload is usually quick)
+        setTimeout(() => {
+            if (scanBtn.disabled) {
+                updateButtonStatus('Scanning with 70+ engines');
+            }
+        }, 2000);
+
+        // Show processing message after 30 seconds
+        setTimeout(() => {
+            if (scanBtn.disabled) {
+                updateButtonStatus('Still scanning');
+            }
+        }, 30000);
+
+        const response = await scanPromise;
+
+        // Progress step 3: Processing
+        updateButtonStatus('Processing results');
+
         const data = await response.json();
 
-        if (!response.ok) {
-            throw new Error(data.error || 'Scan failed');
-        }
+        if (!response.ok) throw new Error(data.error || 'Scan failed');
 
         displayResults(data);
         loadExplanation(data);
@@ -83,8 +89,13 @@ scanBtn.addEventListener('click', async () => {
     } finally {
         scanBtn.disabled = false;
         scanBtn.textContent = 'Scan File';
+        scanBtn.classList.remove('loading-dots');
     }
 });
+
+function updateButtonStatus(text) {
+    scanBtn.innerHTML = `<span class="loading-dots">${text}</span>`;
+}
 
 function displayResults(data) {
     const statusIcon = document.getElementById('statusIcon');
@@ -92,47 +103,35 @@ function displayResults(data) {
     const stats = document.getElementById('stats');
 
     const malicious = data.stats?.malicious || 0;
-    const suspicious = data.stats?.suspicious || 0;
 
-    let icon, text, className;
     if (malicious > 0) {
-        icon = '⚠️';
-        text = `Threat Detected (${malicious} engines)`;
-        className = 'danger';
-    } else if (suspicious > 0) {
-        icon = '⚡';
-        text = 'Suspicious';
-        className = 'warning';
+        statusIcon.textContent = '';
+        statusText.textContent = 'Threat Detected';
+        statusText.className = 'status-text danger';
     } else {
-        icon = '✅';
-        text = 'No Threats Found';
-        className = 'safe';
+        statusIcon.textContent = '';
+        statusText.textContent = 'No Threats Found';
+        statusText.className = 'status-text safe';
     }
 
-    statusIcon.textContent = icon;
-    statusText.textContent = text;
-    statusText.className = 'status-text ' + className;
-
-    if (data.stats) {
-        stats.innerHTML = `
-            <div class="stat">
-                <div class="stat-value" style="color: #f87171;">${data.stats.malicious || 0}</div>
-                <div class="stat-label">Malicious</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" style="color: #fbbf24;">${data.stats.suspicious || 0}</div>
-                <div class="stat-label">Suspicious</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" style="color: #4ade80;">${data.stats.harmless || 0}</div>
-                <div class="stat-label">Clean</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" style="color: #a0a0a0;">${data.stats.undetected || 0}</div>
-                <div class="stat-label">Undetected</div>
-            </div>
-        `;
-    }
+    stats.innerHTML = `
+        <div class="stat">
+            <div class="stat-value">${data.stats?.malicious || 0}</div>
+            <div class="stat-label">Malicious</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">${data.stats?.suspicious || 0}</div>
+            <div class="stat-label">Suspicious</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">${data.stats?.harmless || 0}</div>
+            <div class="stat-label">Clean</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">${data.stats?.undetected || 0}</div>
+            <div class="stat-label">Undetected</div>
+        </div>
+    `;
 
     results.classList.add('show');
 }
@@ -140,8 +139,7 @@ function displayResults(data) {
 async function loadExplanation(scanData) {
     const aiExplanation = document.getElementById('aiExplanation');
 
-    // Show loading state
-    aiExplanation.textContent = 'Generating AI analysis...';
+    aiExplanation.innerHTML = '<span class="loading-dots">Generating analysis</span>';
     aiExplanation.classList.add('show', 'loading');
 
     try {
@@ -152,16 +150,13 @@ async function loadExplanation(scanData) {
         });
 
         const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to get explanation');
-        }
+        if (!response.ok) throw new Error(data.error);
 
         aiExplanation.textContent = data.explanation;
         aiExplanation.classList.remove('loading');
 
-    } catch (err) {
-        aiExplanation.textContent = 'Could not generate AI analysis.';
+    } catch {
+        aiExplanation.textContent = 'Could not generate analysis.';
         aiExplanation.classList.remove('loading');
     }
 }

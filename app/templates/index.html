@@ -3,36 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Scanner - CloudsineAI</title>
+    <title>File Scanner</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="container">
         <h1>File Scanner</h1>
-        <p class="subtitle">Scan files for malware with AI-powered analysis</p>
+        <p class="subtitle">Upload a file to scan for malware</p>
 
         <div class="upload-zone" id="uploadZone">
-            <div class="upload-icon">📁</div>
-            <p class="upload-text">Drop file here or <span>click to browse</span></p>
+            <div class="upload-icon">📄</div>
+            <p class="upload-text">Drop file here or click to browse</p>
             <input type="file" class="file-input" id="fileInput">
         </div>
 
         <div class="file-name" id="fileName"></div>
-
         <button class="scan-btn" id="scanBtn" disabled>Scan File</button>
 
         <div class="results" id="results">
-            <div class="results-header">
+            <div class="status">
                 <span class="status-icon" id="statusIcon"></span>
                 <span class="status-text" id="statusText"></span>
             </div>
-
-            <div class="stats" id="stats"></div>
 
             <div class="ai-section">
                 <div class="ai-label">AI Analysis</div>
                 <div class="ai-explanation" id="aiExplanation"></div>
             </div>
+
+            <div class="stats" id="stats"></div>
         </div>
 
         <div class="error" id="error" style="display: none;"></div>
