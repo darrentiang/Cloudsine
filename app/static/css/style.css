@@ -164,23 +164,14 @@ h1 {
     border-top: 1px solid #2a3a5a;
 }
 
-.ai-btn {
-    width: 100%;
-    padding: 12px;
-    background: #2a2a4a;
-    color: white;
-    border: 1px solid #4361ee;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.ai-btn:hover {
-    background: #3a3a5a;
+.ai-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #a0a0a0;
+    margin-bottom: 8px;
 }
 
 .ai-explanation {
-    margin-top: 12px;
     padding: 16px;
     background: #0f1629;
     border-radius: 8px;

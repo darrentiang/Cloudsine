@@ -6,7 +6,6 @@ const results = document.getElementById('results');
 const error = document.getElementById('error');
 
 let selectedFile = null;
-let scanResults = null;
 
 // Click to browse
 uploadZone.addEventListener('click', () => fileInput.click());
@@ -75,8 +74,9 @@ scanBtn.addEventListener('click', async () => {
             throw new Error(data.error || 'Scan failed');
         }
 
-        scanResults = data;
         displayResults(data);
+        loadExplanation(data);
+
     } catch (err) {
         error.textContent = err.message;
         error.style.display = 'block';
@@ -91,7 +91,6 @@ function displayResults(data) {
     const statusText = document.getElementById('statusText');
     const stats = document.getElementById('stats');
 
-    // Determine threat level
     const malicious = data.stats?.malicious || 0;
     const suspicious = data.stats?.suspicious || 0;
 
@@ -114,7 +113,6 @@ function displayResults(data) {
     statusText.textContent = text;
     statusText.className = 'status-text ' + className;
 
-    // Display stats
     if (data.stats) {
         stats.innerHTML = `
             <div class="stat">
@@ -136,28 +134,21 @@ function displayResults(data) {
         `;
     }
 
-    // Reset AI section
-    document.getElementById('aiExplanation').classList.remove('show');
-    document.getElementById('aiBtn').textContent = 'Explain with AI';
-
     results.classList.add('show');
 }
 
-// AI Explanation
-document.getElementById('aiBtn').addEventListener('click', async () => {
-    const aiBtn = document.getElementById('aiBtn');
+async function loadExplanation(scanData) {
     const aiExplanation = document.getElementById('aiExplanation');
 
-    if (!scanResults) return;
-
-    aiBtn.disabled = true;
-    aiBtn.textContent = 'Analyzing...';
+    // Show loading state
+    aiExplanation.textContent = 'Generating AI analysis...';
+    aiExplanation.classList.add('show', 'loading');
 
     try {
         const response = await fetch('/api/explain', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ scan_results: scanResults })
+            body: JSON.stringify({ scan_results: scanData })
         });
 
         const data = await response.json();
@@ -167,12 +158,10 @@ document.getElementById('aiBtn').addEventListener('click', async () => {
         }
 
         aiExplanation.textContent = data.explanation;
-        aiExplanation.classList.add('show');
+        aiExplanation.classList.remove('loading');
+
     } catch (err) {
-        aiExplanation.textContent = 'Error: ' + err.message;
-        aiExplanation.classList.add('show');
-    } finally {
-        aiBtn.disabled = false;
-        aiBtn.textContent = 'Explain with AI';
+        aiExplanation.textContent = 'Could not generate AI analysis.';
+        aiExplanation.classList.remove('loading');
     }
-});
+}
