@@ -1,6 +1,4 @@
-# File Scanner - CloudsineAI Take-Home Assignment
-
-A web application that scans files for malware using VirusTotal API and provides AI-powered explanations using Google Gemini.
+# File Scanner
 
 ---
 
