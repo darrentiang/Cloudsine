@@ -38,3 +38,5 @@ _context/
 
 # Test scripts
 test_*.py
+
+*.pem
