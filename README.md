@@ -1,115 +1,301 @@
-# **CloudsineAI: WebTest Take-Home Assignment**
+# File Scanner - CloudsineAI Take-Home Assignment
 
-*"Clean code always looks like it was written by someone who cares."*  
-— **Robert C. Martin**, *Author of Clean Code*
-
-Welcome to the CloudsineAI take-home assignment! This project will help us evaluate your coding skills, problem-solving abilities, and design process. Let's get started!
+A web application that scans files for malware using VirusTotal API and provides AI-powered explanations using Google Gemini.
 
 ---
 
-## **Objective**
-The goal of this assignment is to create a functional web application with GenAI hosted on **AWS EC2**. The application will integrate with the VirusTotal API to securely upload and scan files for malware or viruses.  Integrate with a free GenAI app such as Gemini API to explain the results to a lay end user.  
+## Live Demo
+
+**URL:** http://3.27.189.247
 
 ---
 
-## **Features**
-1. **File Upload and Scanning**: Build a web interface that allows users to upload files and scan them using the [VirusTotal API](https://docs.virustotal.com/reference/overview).
-2. **Result Display**: Present the scan results dynamically and clearly on the webpage.
-3. **GenAI Integration**: Integrate with a LLM to explain the results to a lay end user
-4. **Customizable Design**: Add enhancements or optimizations to showcase your skills.
+## Table of Contents
+
+1. [Features](#features)
+2. [Tech Stack](#tech-stack)
+3. [Architecture](#architecture)
+4. [Setup Instructions](#setup-instructions)
+5. [Project Structure](#project-structure)
+6. [Design Choices](#design-choices)
+7. [Challenges & Solutions](#challenges--solutions)
+8. [Development Process](#development-process)
 
 ---
 
-## **Assignment Steps**
+## Features
 
-### **Step 1: Set Up the Web Server on EC2**
-1. Launch an **AWS EC2 instance** to host your web application:
-   - Choose an appropriate instance type (e.g., t2.micro under the free tier) and configure the security group for web traffic (HTTP/HTTPS).  
-   - Install and configure your preferred web server software, such as **Apache**, **NGINX**, or any other of your choice.
-2. Ensure the instance is properly configured and accessible for hosting the web application.
-
----
-
-### **Step 2: Develop the Web Application**
-1. **Core Functionality**:
-   - Implement a **file upload** feature with basic validation (e.g., file size/type).
-   - Integrate with the VirusTotal API to scan the uploaded files.
-   - Dynamically display the scan results on the webpage.
-2. **Preferred Programming Languages**:
-   - While **Golang** or **Python** are preferred, you may use any language or framework you are comfortable with.
-3. **Security Considerations**:
-   - Handle file uploads securely to prevent malicious file execution.
-   - Sanitize API requests and responses.
+- **File Upload**: Drag-and-drop or click to browse file upload
+- **VirusTotal Integration**: Scans files using 70+ antivirus engines
+- **AI Analysis**: Gemini-powered plain English explanation of scan results
+- **Real-time Progress**: Visual feedback during scanning process
+- **Responsive UI**: Clean, minimal interface
 
 ---
 
-### **Step 3: Test with Sample Files**
-1. Use the provided sample files in this repository to test your application.
-2. Verify that the scan results are displayed correctly after processing by the VirusTotal API.
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Backend | Python 3.11, Flask |
+| Frontend | HTML, CSS, JavaScript |
+| File Scanning | VirusTotal API |
+| AI Explanation | Google Gemini API |
+| Server | Gunicorn (WSGI) |
+| Containerization | Docker |
+| Hosting | AWS EC2 (Ubuntu, t2.micro) |
 
 ---
 
-## **Example Workflow**
-1. A user uploads a file through the web interface.
-2. The file is sent to the VirusTotal API for scanning.  
-3. The API processes the file and returns the results.  
-4. The scan results are displayed on the webpage in a user-friendly format.
-5. Include a button where the GenAI can elaborate on the scan results to a lay end user.
+## Architecture
+
+### Data Flow
+
+```
+User uploads file
+       │
+       ▼
+┌─────────────────┐
+│   Flask App     │
+│   /api/scan     │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  VirusTotal     │
+│  API Service    │
+│  - Upload file  │
+│  - Poll results │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Gemini API     │
+│  Service        │
+│  - Explain      │
+│    results      │
+└────────┬────────┘
+         │
+         ▼
+   JSON Response
+   to Frontend
+```
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Main page |
+| `/api/scan` | POST | Upload and scan file |
+| `/api/explain` | POST | Get AI explanation |
 
 ---
 
-## **Bonus Section: Optional Enhancements**
-Go the extra mile by implementing one or both of the following:
+## Setup Instructions
 
-### **1. Dockerization**
-- Create separate **Dockerfiles** for development and production environments.
-- Use **Docker Compose** to manage multi-container setups (e.g., integrating a PostgreSQL database).
-- Optimize image sizes and configurations for faster deployments.
+### Prerequisites
 
-### **2. CI/CD Pipeline**
-- Automate testing and deployments using a CI/CD pipeline (e.g., GitHub Actions or AWS CodePipeline).
-- Include integration tests to ensure file uploads and VirusTotal API calls function correctly.
-- Securely manage environment variables and secrets using tools like AWS Secrets Manager.
+- Python 3.11+
+- Docker (optional)
+- VirusTotal API key
+- Google Gemini API key
+
+### Option 1: Run Locally (Without Docker)
+
+```bash
+# Clone the repository
+git clone https://github.com/darrentiang/Cloudsine.git
+cd Cloudsine
+
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Create .env file
+cp .env.example .env
+# Edit .env and add your API keys
+
+# Run the application
+python run.py
+```
+
+Open http://localhost:5000
+
+### Option 2: Run with Docker
+
+```bash
+# Clone the repository
+git clone https://github.com/darrentiang/Cloudsine.git
+cd Cloudsine
+
+# Create .env file
+cp .env.example .env
+# Edit .env and add your API keys
+
+# Build Docker image
+docker build -t file-scanner .
+
+# Run container
+docker run -p 5000:5000 --env-file .env file-scanner
+```
+
+Open http://localhost:5000
+
+### Option 3: Deploy to AWS EC2
+
+```bash
+# SSH into EC2 instance
+ssh -i your-key.pem ubuntu@YOUR_EC2_IP
+
+# Install Docker
+sudo apt update
+sudo apt install -y docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker ubuntu
+newgrp docker
+
+# Clone repository
+git clone https://github.com/darrentiang/Cloudsine.git
+cd Cloudsine
+
+# Create .env file with your API keys
+nano .env
+
+# Build and run
+docker build -t file-scanner .
+docker run -d -p 80:5000 --env-file .env --restart always file-scanner
+```
 
 ---
 
-## **Evaluation Criteria**
-You are free to use AI code assistants such as Cursor and Claude Code.  However, you are expected to be able to understand and explain most of the code.  
+## Project Structure
 
-Your submission will be assessed on:
-1. **Functionality**: Does the application meet the core requirements?  
-2. **Code Quality**: Is the code modular, maintainable, and well-documented?  
-3. **Problem-Solving**: How effectively did you address challenges and errors?  
-4. **Creativity**: Did you add enhancements or optimizations to improve the application?  
-5. **Presentation**: Is the solution polished and user-friendly?  
+```
+Cloudsine/
+├── app/
+│   ├── __init__.py           # Flask app factory
+│   ├── routes/
+│   │   ├── main.py           # Page routes
+│   │   └── api.py            # API endpoints
+│   ├── services/
+│   │   ├── virustotal.py     # VirusTotal API client
+│   │   └── gemini.py         # Gemini API client
+│   ├── templates/
+│   │   └── index.html        # Main page
+│   └── static/
+│       ├── css/style.css     # Styles
+│       └── js/main.js        # Frontend logic
+├── files/                     # Sample test files
+├── config.py                  # Configuration
+├── run.py                     # Entry point
+├── requirements.txt           # Dependencies
+├── Dockerfile                 # Docker configuration
+└── .env.example              # Environment template
+```
+
+## Challenges & Solutions
+
+### 1. VirusTotal Async Processing
+
+**Challenge:** VirusTotal doesn't return results immediately - scans take 1-3 minutes.
+
+**Solution:** Implemented polling mechanism that checks status every 20 seconds until scan completes. Added progress indicators on frontend to keep users informed.
+
+### 2. Rate Limiting
+
+**Challenge:** VirusTotal free tier limits to 4 requests/minute.
+
+**Solution:** Added 20-second delays between poll requests to stay within limits.
+
+### 3. Conflict Errors
+
+**Challenge:** Uploading recently scanned files caused 409 Conflict errors.
+
+**Solution:** Could check file hash first to avoid re-uploading.
+
+### 4. Flask to Next.js Mental Model
+
+**Challenge:** Coming from Next.js background, Flask patterns were unfamiliar.
+
+**Solution:** Mapped Flask concepts to Next.js equivalents:
+- `routes/` → `pages/api/`
+- `templates/` → `pages/`
+- `Blueprint` → file-based routing
+- `request` → `req` object
 
 ---
 
-## **Resources**
-- [AWS EC2 Getting Started Guide](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/get-set-up-for-amazon-ec2.html)  
-- [VirusTotal API Documentation](https://docs.virustotal.com/reference/overview)  
-- [PostgreSQL Quick Start Guide](https://www.postgresql.org/docs/current/tutorial.html)  
-- [Gemini API Docs] https://ai.google.dev/gemini-api/docs
+## Development Process
+
+### Phase 0: Planning & Architecture
+Scoped out the project phases and mapped out the architecture. Researched Flask patterns (coming from Next.js background), planned the project structure, and defined the data flow between frontend, backend, and external APIs.
+
+### Phase 1: Account Setup
+Set up accounts and obtained API keys for AWS, VirusTotal, and Google Gemini.
+
+### Phase 2: Local Development
+Built the Flask application with VirusTotal and Gemini API integration. Structured the project with separate services, routes, and templates.
+
+### Phase 3: Local Testing
+Tested the application locally with sample files (both clean and malicious) to verify VirusTotal scanning and Gemini explanations work correctly.
+
+### Phase 4: Dockerization
+Created Dockerfile to containerize the application. Used Gunicorn as the production WSGI server instead of Flask's development server.
+
+### Phase 5: AWS EC2 Setup
+Launched Ubuntu t2.micro instance, configured security groups for SSH (port 22) and HTTP (port 80), and installed Docker on the server.
+
+### Phase 6: Deploy to EC2
+Cloned repository to EC2, configured environment variables, built Docker image, and ran the container. Application now live at http://3.27.189.247
+
 ---
 
-## **Submission Requirements**
-1. **Documentation**:
-   - Provide a detailed README explaining your setup process, challenges, and solutions.  
-2. **Source Code**:
-   - Share your codebase with clear instructions for running the application.  
-3. **Deployment**:
-   - Host your application on AWS EC2 and provide access for review.  
-4. **Discussion**:
-   - Be prepared to discuss your design choices, challenges faced, and any enhancements implemented.
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `VIRUSTOTAL_API_KEY` | VirusTotal API key |
+| `GEMINI_API_KEY` | Google Gemini API key |
+| `FLASK_ENV` | `development` or `production` |
+| `FLASK_DEBUG` | `True` or `False` |
+| `SECRET_KEY` | Flask secret key |
 
 ---
 
-## **Getting Started**
-1. Clone this repository and review the provided sample files.  
-2. Set up your AWS EC2 instance and deploy the web application.  
-3. Test the file upload and VirusTotal integration locally before deploying it to AWS.
+## Sample Test Files
+
+The `files/` directory contains test files:
+
+| File | Type | Expected Result |
+|------|------|-----------------|
+| `jquery-3.5.1.min.js` | Clean | No threats |
+| `moment.min.js` | Clean | No threats |
+| `obfuscated_cryptomine.js` | Malicious | Threat detected |
+| `forbes_magecart_skimmer.js` | Malicious | Threat detected |
+| `newegg_magecart_skimmer.js` | Malicious | Threat detected |
 
 ---
 
-We look forward to seeing your innovative solutions and thoughtful designs!  
-**CloudsineAI Team**  
+## Future Improvements
+
+- Add file hash checking to avoid re-uploading known files
+- Support batch file uploads
+- Add more detailed scan reports
+- CI/CD pipeline for automated deployments
+
+---
+
+## Acknowledgments
+
+- [VirusTotal](https://www.virustotal.com/) for the malware scanning API
+- [Google Gemini](https://ai.google.dev/) for AI explanations
+- [Flask](https://flask.palletsprojects.com/) for the web framework
